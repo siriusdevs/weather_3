@@ -18,8 +18,10 @@ HEADER_LEN = 'Content-Length'
 POST_KEYS = 'name', 'lat', 'lon'
 GET_RETURNS = 'html' # switch to json if you like
 
-TEMPLATE_CITIES = 'cities.html'
-TEMPLATE_MAIN = 'index.html'
-TEMPLATE_WEATHER = 'weather.html'
+TEMPLATES = 'templates/'
+TEMPLATE_CITIES = f'{TEMPLATES}cities.html'
+TEMPLATE_MAIN = f'{TEMPLATES}index.html'
+TEMPLATE_WEATHER = f'{TEMPLATES}weather.html'
+TEMPLATE_ERROR = f'{TEMPLATES}error_page.html'
 
 WEATHER_FACT_KEYS = 'temp', 'feels_like', 'wind_speed'

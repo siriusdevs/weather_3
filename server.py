@@ -5,7 +5,7 @@ from urllib.parse import unquote
 
 import db
 from config import *
-from views import page_from_cities, main_page, weather_page
+import views
 from weather import get_weather
 import dotenv
 import os
@@ -34,7 +34,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
             return self.cities()
         elif self.path.startswith('/weather'):
             return self.weather()
-        return main_page()
+        return views.main_page()
 
     def get_query(self) -> dict:
         quest_mark = '?'
@@ -51,15 +51,15 @@ class CustomHandler(SimpleHTTPRequestHandler):
             if response:
                 weather_params = get_weather(*response, self.yandex_key)
                 weather_params['city'] = query[CITY_KEY]
-                return weather_page(weather_params)
-        return '' # TODO 
+                return views.weather_page(weather_params)
+        return views.error_page()
 
     def cities(self):
         cities = db.get_cities(self.cursor)
         if GET_RETURNS == 'json':
             body = json_from_cities(cities)
         elif GET_RETURNS == 'html':
-            body = page_from_cities(cities_to_strings(cities))
+            body = views.page_from_cities(cities_to_strings(cities))
         else:
             body = ''
         return body
