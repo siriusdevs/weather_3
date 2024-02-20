@@ -5,8 +5,10 @@ from urllib.parse import unquote
 
 import db
 from config import *
-from views import page_from_cities, main_page
+from views import page_from_cities, main_page, weather_page
 from weather import get_weather
+import dotenv
+import os
 
 
 def json_from_cities(cities: list[tuple]) -> str:
@@ -17,16 +19,22 @@ def cities_to_strings(cities: list[tuple]) -> list:
     return [f'{city}\t{lat}\t{lon}' for city, lat, lon in cities]
 
 
-class CustomHandler(SimpleHTTPRequestHandler):
-    db_connection, cursor = db.connect()
+def load_creds_to_handler(class_: type) -> type:
+    dotenv.load_dotenv()
+    setattr(class_, 'yandex_key', os.environ.get('YANDEX_KEY'))
+    connection, cursor = db.connect()
+    setattr(class_, 'db_connection', connection)
+    setattr(class_, 'cursor', cursor)
+    return class_
 
+
+class CustomHandler(SimpleHTTPRequestHandler):
     def router(self):
         if self.path.startswith('/cities'):
             return self.cities()
         elif self.path.startswith('/weather'):
             return self.weather()
-        else:
-            return main_page()
+        return main_page()
 
     def get_query(self) -> dict:
         quest_mark = '?'
@@ -41,8 +49,10 @@ class CustomHandler(SimpleHTTPRequestHandler):
         if CITY_KEY in query.keys():
             response = db.get_city(self.cursor, query[CITY_KEY])
             if response:
-                return str(get_weather(*response))
-        return ''
+                weather_params = get_weather(*response, self.yandex_key)
+                weather_params['city'] = query[CITY_KEY]
+                return weather_page(weather_params)
+        return '' # TODO 
 
     def cities(self):
         cities = db.get_cities(self.cursor)
@@ -94,7 +104,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server = HTTPServer((HOST, PORT), CustomHandler)
+    server = HTTPServer((HOST, PORT), load_creds_to_handler(CustomHandler))
     print(f'Server started at {HOST}:{PORT}')
     try:
         server.serve_forever()

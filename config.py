@@ -20,3 +20,6 @@ GET_RETURNS = 'html' # switch to json if you like
 
 TEMPLATE_CITIES = 'cities.html'
 TEMPLATE_MAIN = 'index.html'
+TEMPLATE_WEATHER = 'weather.html'
+
+WEATHER_FACT_KEYS = 'temp', 'feels_like', 'wind_speed'
