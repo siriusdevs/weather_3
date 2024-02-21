@@ -36,8 +36,20 @@ class CustomHandler(SimpleHTTPRequestHandler):
         quest_mark = '?'
         if quest_mark not in self.path:
             return {}
-        query = self.path[self.path.index(quest_mark)+1:]
-        return {pair.split('=')[0]: pair.split('=')[1] for pair in query.split('&')}
+        query_text = self.path[self.path.index(quest_mark)+1:]
+        query = {}
+        for pair in query_text.split('&'):
+            key, value = pair.split('=')
+            if value.isdigit():
+                query[key] = int(value)
+                continue
+            try:
+                float(value)
+            except ValueError:
+                query[key] = views.plusses_to_spaces(value)
+            else:
+                query[key] = float(value)
+        return query
 
     def weather(self):
         CITY_KEY = 'city'

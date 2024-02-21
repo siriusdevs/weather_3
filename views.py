@@ -32,9 +32,17 @@ def cities_html(cities: tuple[str, float, float]) -> str:
     href = '<a href="/weather?city='
     items = []
     for city, lat, lon in cities:
-        items.append(f'<li>{href}{city}">{city}</a>, lat: {lat}, lon: {lon}</li>')
+        items.append(f'<li>{href}{spaces_to_plusses(city)}">{city}</a>, lat: {lat}, lon: {lon}</li>')
     return html.format('\n'.join(items))
 
 
 def form_options(values: list) -> str:
     return '\n'.join(f'<option value="{value}">{value}</option>' for value in values)
+
+
+def plusses_to_spaces(text: str) -> str:
+    return text.replace('+', ' ')
+
+
+def spaces_to_plusses(text: str) -> str:
+    return text.replace(' ', '+')
