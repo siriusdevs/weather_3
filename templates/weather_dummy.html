@@ -1,19 +1,27 @@
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>
-            Weather
-        </title>
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <hr>
         <form id="weather_form" action="/weather">
+            <h2>Choose the city</h2>
             <select id="weather" name="city" form="weather_form">
                 {form_options}
             </select>
-            <br><br>
-            <input type="submit">
+            <br>
+           <button type="submit" class="glow-on-hover">Submit</button>
         </form>
-        <a href="/cities">Cities</a>
-        <br>
-        <a href="/">Back to main</a>
-    </body>
+        <hr><br>
+        <nav class="navigation">
+            <button onclick="location.href='/cities'" class="glow-on-hover">Cities</button>
+            <button onclick="location.href='/'" class="glow-on-hover">Back to main</button>
+        </nav>
+    </div>
+</body>
 </html>

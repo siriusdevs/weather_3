@@ -1,18 +1,23 @@
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>
-            Cities
-        </title>
-    </head>
-    <body>
-        <h3>
-            Cities:
-        </h3>
-        <h4>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cities</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <hr>
+        <div class="weather-city">
+            <h2>Cities:</h2>
             {cities}
-        </h4>
-        <a href="/weather">Weather</a>
-        <br>
-        <a href="/">Back to main</a>
-    </body>
+        </div>
+        <hr><br>
+        <nav class="navigation">
+            <button onclick="location.href='/weather'" class="glow-on-hover">Weather</button>
+            <button onclick="location.href='/'" class="glow-on-hover">Back to main</button>
+        </nav>
+    </div>
+</body>
 </html>

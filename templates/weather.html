@@ -1,17 +1,34 @@
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>
-            Weather
-        </title>
-    </head>
-    <body>
-        <h3>Weather in city {city}:</h3>
-        <h4>Temperature: {temp}</h4>
-        <h4>Feels like: {feels_like}</h4>
-        <h4>Wind speed: {wind_speed}</h4>
-        <br>
-        <a href="/cities">Cities</a>
-        <br>
-        <a href="/">Back to main</a>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Weather Forecast</h1>
+        </header>
+        <main>
+            <section class="weather-info">
+                <div class="weather-city">
+                    <h2>Weather in {city}</h2> 
+                </div>
+                <hr>
+                <div class="weather-details">
+                    <p><strong>Temperature:</strong> {temp}</p>
+                    <p><strong>Feels like:</strong> {feels_like}</p>
+                    <p><strong>Wind speed:</strong> {wind_speed}</p>
+                </div>
+                <hr>
+            </section>
+            <nav class="navigation">
+                <button onclick="location.href='/cities'" class="glow-on-hover">View All Cities</button>
+                <button onclick="location.href='/'" class="glow-on-hover">Back to Main</button>
+            </nav>
+        </main>
+    </div>
+</body>
 </html>
