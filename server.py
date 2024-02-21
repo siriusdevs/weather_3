@@ -15,10 +15,6 @@ def json_from_cities(cities: list[tuple]) -> str:
     return json.dumps({name: {'lat': lat, 'lon': lon} for name, lat, lon in cities})
 
 
-def cities_to_strings(cities: list[tuple]) -> list:
-    return [f'{city}\t{lat}\t{lon}' for city, lat, lon in cities]
-
-
 def load_creds_to_handler(class_: type) -> type:
     dotenv.load_dotenv()
     setattr(class_, 'yandex_key', os.environ.get('YANDEX_KEY'))
@@ -59,7 +55,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
         if GET_RETURNS == 'json':
             body = json_from_cities(cities)
         elif GET_RETURNS == 'html':
-            body = views.page_from_cities(cities_to_strings(cities))
+            body = views.cities_page(cities)
         else:
             body = ''
         return body
