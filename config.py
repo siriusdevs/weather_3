@@ -23,5 +23,6 @@ TEMPLATE_CITIES = f'{TEMPLATES}cities.html'
 TEMPLATE_MAIN = f'{TEMPLATES}index.html'
 TEMPLATE_WEATHER = f'{TEMPLATES}weather.html'
 TEMPLATE_ERROR = f'{TEMPLATES}error_page.html'
+TEMPLATE_WEATHER_DUMMY = f'{TEMPLATES}weather_dummy.html'
 
 WEATHER_FACT_KEYS = 'temp', 'feels_like', 'wind_speed'

@@ -15,6 +15,10 @@ def weather_page(weather_params: dict) -> str:
     return load_page(config.TEMPLATE_WEATHER, weather_params)
 
 
+def weather_dummy_page(cities: list) -> str:
+    return load_page(config.TEMPLATE_WEATHER_DUMMY, {'form_options': form_options(cities)})
+
+
 def main_page() -> str:
     return load_page(config.TEMPLATE_MAIN)
 
@@ -30,3 +34,7 @@ def cities_html(cities: tuple[str, float, float]) -> str:
     for city, lat, lon in cities:
         items.append(f'<li>{href}{city}">{city}</a>, lat: {lat}, lon: {lon}</li>')
     return html.format('\n'.join(items))
+
+
+def form_options(values: list) -> str:
+    return '\n'.join(f'<option value="{value}">{value}</option>' for value in values)

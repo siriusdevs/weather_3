@@ -42,12 +42,14 @@ class CustomHandler(SimpleHTTPRequestHandler):
     def weather(self):
         CITY_KEY = 'city'
         query = self.get_query()
-        if CITY_KEY in query.keys():
-            response = db.get_city(self.cursor, query[CITY_KEY])
-            if response:
-                weather_params = get_weather(*response, self.yandex_key)
-                weather_params['city'] = query[CITY_KEY]
-                return views.weather_page(weather_params)
+        if CITY_KEY not in query.keys():
+            cities = db.get_cities(self.cursor)
+            return views.weather_dummy_page([city for city, _, _ in cities])
+        response = db.get_city(self.cursor, query[CITY_KEY])
+        if response:
+            weather_params = get_weather(*response, self.yandex_key)
+            weather_params['city'] = query[CITY_KEY]
+            return views.weather_page(weather_params)
         return views.error_page()
 
     def cities(self):
