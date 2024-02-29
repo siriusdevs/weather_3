@@ -156,7 +156,8 @@ class CustomHandler(SimpleHTTPRequestHandler):
             self.db_connection.rollback()
             return
         if response:
-            self.respond(CREATED)
+            location = HEADER_LOCATION, f'{HOST}:{PORT}/cities?name={body["name"]}'
+            self.respond(CREATED, headers=(location,))
         else:
             self.respond(SERVER_ERROR, 'was not posted')
 

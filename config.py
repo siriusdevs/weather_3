@@ -17,6 +17,7 @@ HEADER_TYPE = 'Content-Type'
 HEADER_LEN = 'Content-Length'
 HEADER_ALLOW = ('Allow', '[GET, HEAD]')
 HEADER_KEY = 'WEATHER_API_KEY'
+HEADER_LOCATION = 'Content-Location'
 
 CITY_KEYS = 'name', 'latitude', 'longtitude'
 GET_RETURNS = 'html' # switch to json if you like
