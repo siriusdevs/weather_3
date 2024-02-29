@@ -8,6 +8,17 @@
 </head>
 <body>
     <div class="container">
+        <form id="cities_form" action="/cities">
+            <h2>Filter cities</h2>
+            <div>City name</div>
+            <input type="text" id="cities" name="name" form="cities_form">
+            <div>Latitude</div>
+            <input type="text" id="cities" name="latitude" form="cities_form">
+            <div>Longitude</div>
+            <input type="text" id="cities" name="longtitude" form="cities_form">
+            <br>
+            <button type="submit" class="glow-on-hover">Submit</button>
+        </form>
         <hr>
         <div class="weather-city">
             <h2>Cities:</h2>

@@ -67,14 +67,17 @@ class CustomHandler(SimpleHTTPRequestHandler):
 
     def cities(self):
         query = self.get_query()
+
         if not query or any(key not in CITY_KEYS for key in query.keys()):
             method, args = db.get_all_cities, (self.db_cursor,)
         else:
+            query = {key: value for key, value in query.items() if value != ''}
             attrs, attr_values = [], []
             for attr, attr_val in query.items():
                 attrs.append(attr)
                 attr_values.append(attr_val)
             method, args = db.get_cities, (self.db_cursor, attrs, attr_values)
+
         cities = method(*args)
         if GET_RETURNS == 'json':
             body = json_from_cities(cities)
