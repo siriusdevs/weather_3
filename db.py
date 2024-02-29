@@ -46,3 +46,29 @@ def delete_city(connection: psycopg.Connection, cursor: psycopg.Cursor, city_nam
 def check_token(cursor: psycopg.Cursor, token: str) -> bool:
     cursor.execute(db_query.CHECK_TOKEN, params=(token,))
     return bool(cursor.fetchone()[0])
+
+
+def check_city(cursor: psycopg.Cursor, city: str) -> bool:
+    cursor.execute(db_query.CHECK_CITY, params=(city,))
+    return bool(cursor.fetchone()[0])
+
+
+def update_params(attrs: list[str]) -> str:
+    return ', '.join(f'{attr}=%s' for attr in attrs)
+
+
+def update_city(
+    connection: psycopg.Connection,
+    cursor: psycopg.Cursor,
+    new_attrs: dict,
+    city: str
+) -> bool:
+    attrs, attr_values = [], []
+    for attr, attr_val in new_attrs.items():
+        attrs.append(attr)
+        attr_values.append(attr_val)
+    attr_values.append(city)
+    query = db_query.UPDATE_CITY.format(params=update_params(attrs))
+    cursor.execute(query, params=attr_values)
+    connection.commit()
+    return bool(cursor.rowcount)

@@ -76,8 +76,10 @@ class CustomHandler(SimpleHTTPRequestHandler):
         return body
 
     def do_GET(self) -> None:
+        self.respond(OK, self.router())
+
+    def do_HEAD(self) -> None:
         self.respond(OK)
-        self.wfile.write(self.router().encode())
 
     def respond(self, code: int,
         body: Optional[str] = None,
@@ -176,6 +178,33 @@ class CustomHandler(SimpleHTTPRequestHandler):
             self.respond(NO_CONTENT)
         else:
             self.respond(NOT_FOUND)
+
+    def do_PUT(self) -> None:
+        if not self.allow_and_auth():
+            return
+        query = self.get_query()
+        city_key = 'name'
+        if not query or city_key not in query.keys():
+            self.do_POST()
+            return
+        city = query[city_key]
+        if not db.check_city(self.db_cursor, city):
+            self.do_POST()
+            return
+        body = self.read_json_body()
+        for key in body.keys():
+            if key not in CITY_KEYS:
+                self.respond(BAD_REQUEST, f'key {key} is not suitable for instance')
+                return
+        try:
+            response = db.update_city(self.db_connection, self.db_cursor, body, city)
+        except psycopg.Error as error:
+            self.respond(SERVER_ERROR, f'db eror: {error}')
+            return
+        if response:
+            self.respond(OK, f'instance {city} was updated')
+        else:
+            self.respond(SERVER_ERROR, f'instance {city} was not updated')
 
 
 if __name__ == '__main__':
