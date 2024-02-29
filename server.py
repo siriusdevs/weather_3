@@ -9,6 +9,7 @@ import views
 from weather import get_weather
 import dotenv
 import os
+import psycopg
 
 
 def json_from_cities(cities: list[tuple]) -> str:
@@ -18,9 +19,9 @@ def json_from_cities(cities: list[tuple]) -> str:
 def load_creds_to_handler(class_: type) -> type:
     dotenv.load_dotenv()
     setattr(class_, 'yandex_key', os.environ.get('YANDEX_KEY'))
-    connection, cursor = db.connect()
+    connection, db_cursor = db.connect()
     setattr(class_, 'db_connection', connection)
-    setattr(class_, 'cursor', cursor)
+    setattr(class_, 'db_cursor', db_cursor)
     return class_
 
 
@@ -55,9 +56,9 @@ class CustomHandler(SimpleHTTPRequestHandler):
         CITY_KEY = 'city'
         query = self.get_query()
         if CITY_KEY not in query.keys():
-            cities = db.get_cities(self.cursor)
+            cities = db.get_cities(self.db_cursor)
             return views.weather_dummy_page([city for city, _, _ in cities])
-        response = db.get_city(self.cursor, query[CITY_KEY])
+        response = db.get_city(self.db_cursor, query[CITY_KEY])
         if response:
             weather_params = get_weather(*response, self.yandex_key)
             weather_params['city'] = query[CITY_KEY]
@@ -65,7 +66,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
         return views.error_page()
 
     def cities(self):
-        cities = db.get_cities(self.cursor)
+        cities = db.get_cities(self.db_cursor)
         if GET_RETURNS == 'json':
             body = json_from_cities(cities)
         elif GET_RETURNS == 'html':
@@ -78,36 +79,100 @@ class CustomHandler(SimpleHTTPRequestHandler):
         self.respond(OK)
         self.wfile.write(self.router().encode())
 
-    def respond(self, code: int, message: Optional[str] = None) -> None:
+    def respond(self, code: int,
+        body: Optional[str] = None,
+        headers: Optional[tuple[tuple]] = None,
+        message: Optional[str] = None
+    ) -> None:
         self.send_response(code, message)
         self.send_header(HEADER_TYPE, f'text/{GET_RETURNS}')
+        if headers:
+            for header in headers:
+                self.send_header(*header)
         self.end_headers()
+        if body:
+            self.wfile.write(body.encode())
 
-    def do_POST(self) -> None:
+    def read_json_body(self) -> dict | None:
         body_len = self.headers.get(HEADER_LEN)
         if not body_len:
-            self.respond(BAD_REQUEST)
+            self.respond(BAD_REQUEST, f'you should have provided header {HEADER_LEN}')
+            return None
+        try:
+            return json.loads(self.rfile.read(int(body_len)))
+        except (json.JSONDecodeError, ValueError) as error:
+            self.respond(BAD_REQUEST, f'failed decodning json: {error}')
+            return None
+
+    def is_changes_allowed(self) -> bool:
+        for page in PAGES_CHANGES_ALLOWED:
+            if self.path.startswith(page):
+                return True
+        return False
+    
+    def allow(self) -> bool:
+        if not self.is_changes_allowed():
+            self.respond(NOT_ALLOWED, headers=(HEADER_ALLOW,))
+            return False
+        return True
+
+    def is_authorized(self) -> bool:
+        if HEADER_KEY not in self.headers.keys():
+            return False
+        return db.check_token(self.db_cursor, self.headers.get(HEADER_KEY))
+    
+    def auth(self) -> bool:
+        if not self.is_authorized():
+            self.respond(FORBIDDEN)
+            return False
+        return True
+
+    def allow_and_auth(self) -> bool:
+        if not self.allow():
+            return False
+        if not self.auth():
+            return False
+        return True
+
+    def do_POST(self) -> None:
+        if not self.allow_and_auth():
+            return
+        body = self.read_json_body()
+        if body is None:
+            return
+        if set(body.keys()) != set(CITY_KEYS):
+            self.respond(BAD_REQUEST, f'this instance supports attributes {CITY_KEYS}')
             return
         try:
-            body = json.loads(self.rfile.read(int(body_len)))
-        except (json.JSONDecodeError, ValueError):
-            self.respond(BAD_REQUEST)
+            response = db.add_city(self.db_connection, self.db_cursor, tuple([body[key] for key in CITY_KEYS]))
+        except psycopg.errors.UniqueViolation:
+            self.respond(OK, f'already exists')
+            self.db_connection.rollback()
             return
-        if any(key not in body for key in POST_KEYS) or len(POST_KEYS) != len(body):
-            self.respond(BAD_REQUEST)
+        except psycopg.Error as error:
+            self.respond(SERVER_ERROR, f'db error: {error}')
+            self.db_connection.rollback()
             return
-        if db.add_city(self.db_connection, self.cursor, tuple([body[key] for key in POST_KEYS])):
+        if response:
             self.respond(CREATED)
         else:
             self.respond(SERVER_ERROR, 'was not posted')
 
     def do_DELETE(self) -> None:
+        if not self.allow_and_auth():
+            return
         if self.path.count('/') != 1:
             self.respond(BAD_REQUEST)
             return
         path = unquote(self.path)
         city_name = path[path.find('/')+1:]
-        if db.delete_city(self.db_connection, self.cursor, city_name):
+        try:
+            response = db.delete_city(self.db_connection, self.db_cursor, city_name)
+        except psycopg.Error as error:
+            self.respond(SERVER_ERROR, f'db error: {error}')
+            self.db_connection.rollback()
+            return
+        if response:
             self.respond(NO_CONTENT)
         else:
             self.respond(NOT_FOUND)

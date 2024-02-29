@@ -21,3 +21,9 @@ INSERT INTO city (name, latitude, longtitude) VALUES ('city', 1.0, 1.0);
 
 # unique city constraint
 ALTER TABLE city ADD CONSTRAINT unique_city UNIQUE(name, latitude, longtitude);
+
+# creating token table
+CREATE TABLE token (value text not null);
+
+# inserting token
+INSERT INTO token (value) values ('YOUR_TOKEN');

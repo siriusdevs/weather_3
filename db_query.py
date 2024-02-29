@@ -1,0 +1,7 @@
+CITIES_TABLE = 'city'
+CITIES_SELECT = f'select * from {CITIES_TABLE}'
+CITIES_INSERT = f'insert into {CITIES_TABLE} (name, latitude, longtitude) VALUES (%s, %s, %s)'
+CITIES_DELETE = f'delete from {CITIES_TABLE} WHERE name=%s'
+CITY_SINGLE_SELECT = f'select latitude, longtitude from {CITIES_TABLE} WHERE name=%s'
+CHECK_TOKEN = 'select count(*) from token where value=%s'
+CHECK_CITY = 'select count(*) from city where name=%s'

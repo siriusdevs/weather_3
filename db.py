@@ -2,7 +2,7 @@ import os
 
 import psycopg
 
-from config import CITIES_DELETE, CITIES_INSERT, CITIES_SELECT, CITY_SINGLE_SELECT
+import db_query
 
 DEFAULT_PORT = 5555
 
@@ -22,22 +22,27 @@ def connect() -> tuple[psycopg.Connection, psycopg.Cursor]:
 
 
 def get_cities(cursor: psycopg.Cursor) -> list[tuple]:
-    cursor.execute(CITIES_SELECT)
+    cursor.execute(db_query.CITIES_SELECT)
     return cursor.fetchall()
 
 
 def get_city(cursor: psycopg.Cursor, city_name: str) -> list[tuple]:
-    cursor.execute(CITY_SINGLE_SELECT, params=(city_name,))
+    cursor.execute(db_query.CITY_SINGLE_SELECT, params=(city_name,))
     return cursor.fetchone()
 
 
 def add_city(connection: psycopg.Connection, cursor: psycopg.Cursor, city_coord: tuple) -> bool:
-    cursor.execute(CITIES_INSERT, params=city_coord)
+    cursor.execute(db_query.CITIES_INSERT, params=city_coord)
     connection.commit()
     return bool(cursor.rowcount)
 
 
 def delete_city(connection: psycopg.Connection, cursor: psycopg.Cursor, city_name: str) -> bool:
-    cursor.execute(CITIES_DELETE, params=(city_name,))
+    cursor.execute(db_query.CITIES_DELETE, params=(city_name,))
     connection.commit()
     return bool(cursor.rowcount)
+
+
+def check_token(cursor: psycopg.Cursor, token: str) -> bool:
+    cursor.execute(db_query.CHECK_TOKEN, params=(token,))
+    return bool(cursor.fetchone()[0])
