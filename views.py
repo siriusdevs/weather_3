@@ -27,7 +27,9 @@ def error_page() -> str:
     return load_page(config.TEMPLATE_ERROR)
 
 
-def cities_html(cities: tuple[str, float, float]) -> str:
+def cities_html(cities: list[tuple[str, float, float]]) -> str:
+    if not cities:
+        return 'No cities found'
     html = '<ul>{0}</ul>'
     href = '<a href="/weather?city='
     items = []

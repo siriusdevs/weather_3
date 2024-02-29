@@ -56,7 +56,7 @@ class CustomHandler(SimpleHTTPRequestHandler):
         CITY_KEY = 'city'
         query = self.get_query()
         if CITY_KEY not in query.keys():
-            cities = db.get_cities(self.db_cursor)
+            cities = db.get_all_cities(self.db_cursor)
             return views.weather_dummy_page([city for city, _, _ in cities])
         response = db.get_city(self.db_cursor, query[CITY_KEY])
         if response:
@@ -66,7 +66,16 @@ class CustomHandler(SimpleHTTPRequestHandler):
         return views.error_page()
 
     def cities(self):
-        cities = db.get_cities(self.db_cursor)
+        query = self.get_query()
+        if not query or any(key not in CITY_KEYS for key in query.keys()):
+            method, args = db.get_all_cities, (self.db_cursor,)
+        else:
+            attrs, attr_values = [], []
+            for attr, attr_val in query.items():
+                attrs.append(attr)
+                attr_values.append(attr_val)
+            method, args = db.get_cities, (self.db_cursor, attrs, attr_values)
+        cities = method(*args)
         if GET_RETURNS == 'json':
             body = json_from_cities(cities)
         elif GET_RETURNS == 'html':

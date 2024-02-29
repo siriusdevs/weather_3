@@ -21,8 +21,18 @@ def connect() -> tuple[psycopg.Connection, psycopg.Cursor]:
     return connection, cursor
 
 
-def get_cities(cursor: psycopg.Cursor) -> list[tuple]:
+def get_all_cities(cursor: psycopg.Cursor) -> list[tuple]:
     cursor.execute(db_query.CITIES_SELECT)
+    return cursor.fetchall()
+
+
+def make_params(attrs: list[str], sep: str = ', ') -> str:
+    return sep.join(f'{attr}=%s' for attr in attrs)
+
+
+def get_cities(cursor: psycopg.Cursor, attrs: list, attr_values: list) -> list[tuple]:
+    select = db_query.CITIES_SELECT_CUSTOM.format(params=make_params(attrs, ' and '))
+    cursor.execute(select, params=attr_values)
     return cursor.fetchall()
 
 
@@ -53,10 +63,6 @@ def check_city(cursor: psycopg.Cursor, city: str) -> bool:
     return bool(cursor.fetchone()[0])
 
 
-def update_params(attrs: list[str]) -> str:
-    return ', '.join(f'{attr}=%s' for attr in attrs)
-
-
 def update_city(
     connection: psycopg.Connection,
     cursor: psycopg.Cursor,
@@ -68,7 +74,7 @@ def update_city(
         attrs.append(attr)
         attr_values.append(attr_val)
     attr_values.append(city)
-    query = db_query.UPDATE_CITY.format(params=update_params(attrs))
+    query = db_query.UPDATE_CITY.format(params=make_params(attrs))
     cursor.execute(query, params=attr_values)
     connection.commit()
     return bool(cursor.rowcount)

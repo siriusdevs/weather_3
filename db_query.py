@@ -6,3 +6,4 @@ CITY_SINGLE_SELECT = f'select latitude, longtitude from {CITIES_TABLE} WHERE nam
 CHECK_TOKEN = 'select count(*) from token where value=%s'
 CHECK_CITY = 'select count(*) from city where name=%s'
 UPDATE_CITY = 'update city set {params} where name=%s'
+CITIES_SELECT_CUSTOM = 'select * from city where {params}'
